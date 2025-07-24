@@ -59,8 +59,8 @@ void LocalOrderBook::modifyOrder(const Order& order, double newPrice=0.0, uint32
             auto& orderList = bids[price];
             for(auto it = orderList.begin(); it != orderList.end(); ++it) {
                 if(it->orderId==order.orderId) {
-                    if(price != -1.0) it->price = newPrice;
-                    if(newQty != -1) it->qty = newQty;
+                    if(price > 0.0) it->price = newPrice;
+                    if(newQty > 0) it->qty = newQty;
 
                     return;
                 }

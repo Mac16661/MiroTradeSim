@@ -14,6 +14,7 @@ struct Order {
     OrderType type;
     long long timestamp;
 
+    Order() = default;
     Order(std::string oid, std::string uid = "", double _price = 0.0, std::uint32_t _qty = 0, Side _side = Side::BUY, OrderType _type = OrderType::LIMIT)
         : orderId(std::move(oid)), userId(std::move(uid)), price(_price), qty(_qty), side(_side), type(_type) {
         timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
