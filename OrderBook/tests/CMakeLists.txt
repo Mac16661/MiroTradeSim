@@ -8,7 +8,7 @@ FetchContent_MakeAvailable(googletest)
 
 # Create test executable
 add_executable(runOrderBookTest OrderBookTests.cpp)
-target_link_libraries(runOrderBookTest gtest_main book)
+target_link_libraries(runOrderBookTest gtest_main Book)
 
 include(GoogleTest)
 gtest_discover_tests(runOrderBookTest)

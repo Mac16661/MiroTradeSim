@@ -1,11 +1,9 @@
-cmake_minimum_required(VERSION 3.10)
-project(OrderBook)
+add_library(OrderBookLib src/OrderBook.cpp)
 
-set(CMAKE_CXX_STANDARD 17)
+target_include_directories(OrderBookLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(OrderBookLib PUBLIC PubSubLib)
 
-# ADD SOURCE CODE
-add_subdirectory(src)
-
-# ADD TEST
-enable_testing()
-add_subdirectory(tests)
+# OPTIONAL: make independent executable
+#add_executable(OrderBookExe main.cpp)
+#target_link_libraries(OrderBookLib PUBLIC PubSubLib)
+#target_include_directories(OrderBookExe PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)

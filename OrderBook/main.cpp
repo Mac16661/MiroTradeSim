@@ -2,7 +2,7 @@
 #include "Order.hpp"
 
 int main() {
-    AbstractOrderBook* book = new LocalOrderBook();
+    AbstractOrderBook* book = new MapLLOrderBook();
 
     Order o1 = Order("1", "1", 2.4, 3, Side::BUY, OrderType::LIMIT);
 

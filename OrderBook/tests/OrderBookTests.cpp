@@ -12,7 +12,7 @@ TEST(SampleTest, AddFunction) {
 }
 
 TEST(CreateOrderTest, AddOrderFunction) {
-    AbstractOrderBook* book = new LocalOrderBook();
+    AbstractOrderBook* book = new MapLLOrderBook();
 
     Order o1 = Order("1", "1", 2.4, 3, Side::BUY, OrderType::LIMIT);
 
@@ -23,7 +23,7 @@ TEST(CreateOrderTest, AddOrderFunction) {
 }
 
 TEST(CloseOrderTest, CloseOrderFunction) {
-    AbstractOrderBook* book = new LocalOrderBook();
+    AbstractOrderBook* book = new MapLLOrderBook();
 
     Order o1 = Order("1", "1", 2.4, 3, Side::BUY, OrderType::LIMIT);
 
@@ -34,7 +34,7 @@ TEST(CloseOrderTest, CloseOrderFunction) {
 }
 
 TEST(ModifyOrderTest, ModifyOrderFunction) {
-    AbstractOrderBook* book = new LocalOrderBook();
+    AbstractOrderBook* book = new MapLLOrderBook();
 
     Order o1 = Order("1", "1", 2.4, 3, Side::BUY, OrderType::LIMIT);
 
@@ -52,7 +52,7 @@ TEST(ThroughputTest, PerformanceTestingFunction) {
     int n=1400000; // 1.4 million operations
 
     // Initializing our order book
-    AbstractOrderBook* book = new LocalOrderBook();
+    AbstractOrderBook* book = new MapLLOrderBook();
     // For additional testing
     std::vector<Order> orders(n);
 
