@@ -1,5 +1,6 @@
 
-cmake -B build -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake
-cmake --build build
+# How to run 
 
- cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=$HOME/vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=home/mac/vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake --build build
+./MicroTradeSim

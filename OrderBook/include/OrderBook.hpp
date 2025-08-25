@@ -13,41 +13,43 @@ class OrderBookListener;
 
 class AbstractOrderBook {
 public:
-    virtual void openOrder(const Order& order) = 0;
-    virtual void closeOrder(const Order& order) = 0;
-    virtual void modifyOrder(const Order& order, double newPrice = 0.0, uint32_t newQty = 0) = 0;
+    // Batch bids asks entry
+    virtual void updateAsks(std::vector<std::vector<std::string>> asks) = 0;
+    virtual void updateBids(std::vector<std::vector<std::string>> bids) = 0;
     virtual ~AbstractOrderBook();
 
-    // TODO: Notify to downstream program
+    // TODO: Streamed trade entry (not sure it will be there or not)
+
+    // Notify to downstream program
     virtual void subscribe(OrderBookListener* listener) = 0;
     virtual void unsubscribe(OrderBookListener* listener) = 0;
     virtual void notify(const BookMsg msg) = 0;
 
-    // TODO: Debugging and logging
+    // Debugging and logging
     virtual void showBook() = 0;
 };
 
-class MapLLOrderBook : public AbstractOrderBook {
-public:
-    void openOrder(const Order& order) override;
-    void closeOrder(const Order& order) override;
-    void modifyOrder(const Order& order, double newPrice, uint32_t newQty) override;
+class MapOrderBook : public AbstractOrderBook {
+    public:
+        // Batch bids asks entry
+        MapOrderBook(std::string _name) : name(_name) {}
+        void updateAsks(std::vector<std::vector<std::string>> asks);
+        void updateBids(std::vector<std::vector<std::string>> bids);
 
-    // TODO: Create a sub, unsub, notify function which will send event to HFT strategy
-    void subscribe(OrderBookListener* listener) override;
+        // TODO: Streamed trade entry (not sure it will be there or not)
 
-    void unsubscribe(OrderBookListener* listener) override;
+        // Notify to downstream program
+        void subscribe(OrderBookListener* listener);
+        void unsubscribe(OrderBookListener* listener);
+        void notify(const BookMsg msg);
 
-    void notify(const BookMsg msg) override;
-
-    void showBook() override;
-
-private:
-    std::map<double, std::list<Order>, std::greater<>> bids; // max price first
-    std::map<double, std::list<Order>> asks;                 // min price first
-    std::vector<OrderBookListener*> listeners;
+        // Debugging and logging
+        void showBook();
+    private:
+        std::map<double, std::pair<std::string, std::string>> asks; // min price first
+        std::map<double, std::pair<std::string, std::string>, std::greater<>> bids; // max price first
+        std::vector<OrderBookListener*> listeners;
+        std::string name;
 };
 
-// Other data structure implementation
-class MapSetOrderBook : public AbstractOrderBook {};
 class HeapOrderBook : public AbstractOrderBook {};

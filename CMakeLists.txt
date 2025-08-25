@@ -14,7 +14,9 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(websocketpp)
 
 find_package(OpenSSL REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system thread)
+find_package(Boost REQUIRED COMPONENTS system chrono thread)
+list(APPEND CMAKE_PREFIX_PATH "/home/mac/vcpkg/installed/x64-linux")
+find_package(nlohmann_json CONFIG REQUIRED)
 
 if (OPENSSL_FOUND)
     message(STATUS "Found OpenSSL: ${OPENSSL_VERSION}")
@@ -29,7 +31,8 @@ add_subdirectory(OrderBook)
 add_subdirectory(HFTStrategy)
 
 # Main application
-add_executable(MicroTradeSim main.cpp)
+add_executable(MicroTradeSim main.cpp
+        utils/MarketWebSocket.hpp)
 
 # Link everything properly
 target_link_libraries(MicroTradeSim
@@ -41,5 +44,7 @@ target_link_libraries(MicroTradeSim
         crypto
         Boost::system
         Boost::thread
+        Boost::chrono
+        nlohmann_json::nlohmann_json
 )
 target_include_directories(MicroTradeSim PUBLIC ${websocketpp_SOURCE_DIR})

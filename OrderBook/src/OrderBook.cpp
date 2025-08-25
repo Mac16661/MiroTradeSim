@@ -1,149 +1,74 @@
-#include "OrderBook.hpp"
-
 #include <iostream>
 #include <ostream>
 
-void MapLLOrderBook::openOrder(const Order& order) {
-    /*
-       Check if order price already exists in given order type(bid/ask).
-       If yes then add it to the order list tail.
-       else create a new entry on map and add it to the list.
-    */
+#include "OrderBook.hpp"
 
-    // TODO: Need to implement logic to mantain depth of the book N_SIZE as it is a L2 order book
-    double price = order.price;
-    if (order.side == Side::BUY) {
-        bids[price].push_back(order);
-    }else{
-        asks[price].push_back(order);
-    }
 
-    // TODO: Create pubsub event
-    #ifdef PUBSUB_ENABLED
-    notify(BookMsg::OPEN);
-    #endif
+// Batch bids asks entry
+void MapOrderBook::updateAsks(std::vector<std::vector<std::string>> _asks) {
+    // TODO: Need to make this function atomic or thread safe
+    asks.clear();
 
-}
-
-void MapLLOrderBook::closeOrder(const Order& order) {
-     /*
-        Check if price exists and also does this order exists.
-        Go to the map index using price and delete order form the list using orderID.
-    */
-    double price = order.price;
-    if (order.side == Side::BUY) {
-        if(bids.find(price) != bids.end()) {
-            auto& orderList = bids[price];
-            for(auto it = orderList.begin(); it != orderList.end(); ++it){
-                if(it->orderId == order.orderId){
-                    orderList.erase(it);
-                    // TODO: Create a pubsub event
-                    #ifdef PUBSUB_ENABLED
-                    notify(BookMsg::CLOSE);
-                    #endif
-                    return;
-                }
+        for (const auto& ask : _asks) {
+            if (ask.size() < 2) continue;  // skip invalid entries
+            try {
+                double price = std::stod(ask[0]);
+                asks[price] = {ask[0], ask[1]};
+            } catch (const std::exception& e) {
+                // Handle invalid string-to-double conversion
+                continue;
             }
         }
-    }else {
-        if(asks.find(price) != asks.end()) {
-                    auto& orderList = bids[price];
-                    for(auto it = orderList.begin(); it != orderList.end(); ++it){
-                        if(it->orderId == order.orderId){
-                            orderList.erase(it);
-                            // TODO: Create a pubsub event
-                            #ifdef PUBSUB_ENABLED
-                            notify(BookMsg::CLOSE);
-                            #endif
-                            return;
-                        }
-                    }
-                }
-
-    }
 }
 
-void MapLLOrderBook::modifyOrder(const Order& order, double newPrice=0.0, uint32_t newQty=0) {
-      /*
-         Delete old order and construct new one using newPrice or newQty of both.
-         Search in map by price and in list by order id, delete it and construct a new order object and push it in a newPrice
-      */
+void MapOrderBook::updateBids(std::vector<std::vector<std::string>> _bids) {
+    // TODO: Need to make this function atomic or thread safe
+    bids.clear();
 
-     double price = order.price;
-     if (order.side == Side::BUY) {
-        if(bids.find(price) != bids.end()) {
-            auto& orderList = bids[price];
-            for(auto it = orderList.begin(); it != orderList.end(); ++it) {
-                if(it->orderId==order.orderId) {
-                    if(price > 0.0) it->price = newPrice;
-                    if(newQty > 0) it->qty = newQty;
-                    // TODO: Create a pubsub
-                    #ifdef PUBSUB_ENABLED
-                    notify(BookMsg::MODIFY);
-                    #endif
-                    return;
-                }
+        for (const auto& bid : _bids) {
+            if (bid.size() < 2) continue;  // skip invalid entries
+            try {
+                double price = std::stod(bid[0]);
+                bids[price] = {bid[0], bid[1]};
+            } catch (const std::exception& e) {
+                // Handle invalid string-to-double conversion
+                continue;
             }
         }
-     }else {
-         if(asks.find(price) != asks.end()) {
-                    auto& orderList = bids[price];
-                    for(auto it = orderList.begin(); it != orderList.end(); ++it) {
-                        if(it->orderId==order.orderId) {
-                            if(price > 0.0) it->price = newPrice;
-                            if(newQty > 0) it->qty = newQty;
-                            // TODO: Create a pubsub
-                            #ifdef PUBSUB_ENABLED
-                            notify(BookMsg::MODIFY);
-                            #endif
-                            return;
-                        }
-                    }
-                }
-     }
 }
 
-// TODO: Notification service for downstream program
-void MapLLOrderBook::subscribe(OrderBookListener* listener) {
+
+// Notification service for downstream program
+void MapOrderBook::subscribe(OrderBookListener* listener) {
     listeners.push_back(listener);
 }
 
-void MapLLOrderBook::unsubscribe(OrderBookListener* listener) {
+void MapOrderBook::unsubscribe(OrderBookListener* listener) {
     listeners.erase(remove(listeners.begin(), listeners.end(), listener), listeners.end());
 }
 
-void MapLLOrderBook::notify(const BookMsg msg) {
+void MapOrderBook::notify(const BookMsg msg) {
     for(OrderBookListener* listener: listeners) {
          listener->onOrderBookUpdate(msg);
     }
 }
 
-// TODO: Debug and logging
-void MapLLOrderBook::showBook() {
+// Debug and logging
+void MapOrderBook::showBook() {
+    std::cout<<"ORDER BOOK\n\n"<<std::endl;
 
-    for (auto bid: bids)
-    {
-        double price = bid.first;
-        uint32_t qty = 0;
-        for (auto order: bid.second)
-        {
-            qty+= order.qty;
-        }
-        std::cout<<price<<"  ->  "<<qty<<std::endl;
+    for(auto bid:bids) {
+        std::cout<<bid.second.first<<"\t\t\t"<<bid.second.second<<std::endl;
     }
 
-    std::cout<<std::endl;
+    
+    std::cout<<"\n"<<std::endl;
 
-    for (auto ask:asks)
-    {
-        double price = ask.first;
-        uint32_t qty = 0;
-        for (auto order: ask.second)
-        {
-            qty+= order.qty;
-        }
-        std::cout<<price<<"  ->  "<<qty<<std::endl;
+    for(auto ask:asks) {
+        std::cout<<ask.second.first<<"\t\t\t"<<ask.second.second<<std::endl;
     }
+
+    std::cout<<"\n\n"<<std::endl;
 }
 
 AbstractOrderBook::~AbstractOrderBook() = default;

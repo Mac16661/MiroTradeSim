@@ -2,6 +2,8 @@
 #include <string>
 #include <chrono>
 
+// TODO: We will use then if we decide to add new features [NOT IN USE]
+
 enum class Side { BUY, SELL };
 enum class OrderType { LIMIT, MARKET };
 
