@@ -6,6 +6,8 @@
 #include <boost/asio/ssl/context.hpp>
 #include <boost/asio/ssl.hpp>
 #include <nlohmann/json.hpp>
+#include <unordered_map>
+#include <string>
 
 using client = websocketpp::client<websocketpp::config::asio_tls_client>;
 using websocketpp::connection_hdl;
@@ -17,7 +19,7 @@ using websocketpp::connection_hdl;
 class BinanceWebSocket
 {
 public:
-    BinanceWebSocket(AbstractOrderBook* bookPtr) {
+    BinanceWebSocket(std::unordered_map<std::string, AbstractOrderBook*>& bookPtrs) {
         // Initialize ASIO
         m_endpoint.init_asio();
 
@@ -38,7 +40,7 @@ public:
         m_endpoint.set_pong_handler(std::bind(&BinanceWebSocket::on_pong, this, std::placeholders::_1, std::placeholders::_2));
         m_endpoint.set_ping_handler(std::bind(&BinanceWebSocket::on_ping, this, std::placeholders::_1, std::placeholders::_2));
 
-        book = bookPtr;
+        books = bookPtrs;
     }
 
     void run(const std::string& uri) {
@@ -63,24 +65,16 @@ public:
     void on_message(websocketpp::connection_hdl, client::message_ptr msg) {
         nlohmann::json j = nlohmann::json::parse(msg->get_payload());
 
+        std::string stream = j["stream"];
         // TODO: Update bids and asks of each order book on receiving data
-        if(j["stream"] == "btcusdc@depth20@100ms") {
-            // std::cout<<"BTCUSDC:: "<< j.dump(2)<< "\n\n\n";
-        }else if(j["stream"] == "btcusdt@depth20@100ms") {
-
-            // std::cout<<"BTCUSDT:: "<< j.dump(2)<< "\n\n\n";
-            // !TESTING UPDATE BIDS AND ASK FOR ONLY ONE BOOK
-            // std::cout<<j["data"]["asks"]<<std::endl<<std::endl;
-            // std::cout<<j["data"]["bids"]<<std::endl<<std::endl;
-            book->updateAsks(j["data"]["asks"]);
-            book->updateBids(j["data"]["bids"]);
-
-        }else if(j["stream"] == "btcfdusd@depth20@100ms") {
-            // std::cout<<"BTCFDUSD:: "<< j.dump(2)<< "\n\n\n";
-        }
-
-        // book->updateAsks(j["data"]["asks"]);
-        // book->updateBids(j["data"]["bids"]);
+        // if(stream == "btcusdc@depth20@100ms") {
+        // }else if(stream == "btcusdt@depth20@100ms") {
+        //     books[stream]->updateAsks(j["data"]["asks"]);
+        //     books[stream]->updateBids(j["data"]["bids"]);
+        // }else if(j["stream"] == "btcfdusd@depth20@100ms") {
+        // }
+        books[stream]->updateAsks(j["data"]["asks"]);
+        books[stream]->updateBids(j["data"]["bids"]);
         
     }
 
@@ -100,5 +94,5 @@ public:
     client m_endpoint;
     websocketpp::connection_hdl m_hdl;
     // TODO: We will have multipe books so unordered_map or vector with type -> AbstractOrderBook
-    AbstractOrderBook* book; 
+    std::unordered_map<std::string, AbstractOrderBook*> books; 
 };

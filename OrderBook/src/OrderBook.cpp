@@ -37,6 +37,24 @@ void MapOrderBook::updateBids(std::vector<std::vector<std::string>> _bids) {
         }
 }
 
+std::pair<double, std::pair<std::string, std::string>> MapOrderBook::topBid() {
+    if (bids.empty()) {
+        throw std::runtime_error("No bids available");
+    }
+    return *bids.begin(); // Dereference iterator to get {price, {priceStr, qty}}
+}
+
+std::pair<double, std::pair<std::string, std::string>> MapOrderBook::topAsk() {
+    if (asks.empty()) {
+        throw std::runtime_error("No asks available");
+    }
+    return *asks.begin(); // Smallest ask (since std::map sorts ascending by default)
+}
+
+bool MapOrderBook::isEmpty() {
+    if(bids.empty() or asks.empty()) return true;
+    return false;
+}
 
 // Notification service for downstream program
 void MapOrderBook::subscribe(OrderBookListener* listener) {

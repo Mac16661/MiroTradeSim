@@ -16,6 +16,10 @@ public:
     // Batch bids asks entry
     virtual void updateAsks(std::vector<std::vector<std::string>> asks) = 0;
     virtual void updateBids(std::vector<std::vector<std::string>> bids) = 0;
+    virtual std::pair<double, std::pair<std::string, std::string>> topBid() = 0;
+    virtual std::pair<double, std::pair<std::string, std::string>> topAsk() = 0;
+    virtual bool isEmpty() = 0;
+    
     virtual ~AbstractOrderBook();
 
     // TODO: Streamed trade entry (not sure it will be there or not)
@@ -35,6 +39,9 @@ class MapOrderBook : public AbstractOrderBook {
         MapOrderBook(std::string _name) : name(_name) {}
         void updateAsks(std::vector<std::vector<std::string>> asks);
         void updateBids(std::vector<std::vector<std::string>> bids);
+        std::pair<double, std::pair<std::string, std::string>> topBid();
+        std::pair<double, std::pair<std::string, std::string>> topAsk();
+        bool isEmpty();
 
         // TODO: Streamed trade entry (not sure it will be there or not)
 
